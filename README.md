@@ -145,7 +145,7 @@ Eg.:
 
 ### A complete example
 
-Let's start with the following th json data:
+Let's start with the following transaction json data:
 
 {"type":"sign_transaction": <br>
 "from":"0x1204d2a2f9a823c1a585fde6514a17ff695e0001",<br>
