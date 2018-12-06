@@ -1,10 +1,24 @@
 # QR transaction-, and message signing encoding rules.
 
-We encode the transaction and message singning the following way:
+## Message signing 
 
-0. We put together the tx to encode the following way
+|0-1 digits  | 2-3 digits               | n digits message | 
+|------------|--------------------------|------------------|
+|error check | Signature type + version | message bytes    |
+
+Error check byte = leftmost 2 digits of the sha3(signature + version + message bytes)
+
+Signable messages will not be encoded or compressed. Typed messages must follow the json encoding standard.
 
 ## Transaction encoding 
+
+1. Encode from left to right the 0 th digit is the leftmost digit.
+2. The final data to be transmitted contains only numbers, no letters or special characters.
+3. Digit 9 is used as an escape number to escape 9, a-f characters, delimiter, and compression encoding.
+   The reason for this is that QR codes allow 1.6 times more numeric than alphanumeric characters.
+4. Since ethereum transactions use a lot of zeros, we use compression for zeros. 
+5. We encode the from address in a way that we use its leftmost 4 hex digits (digits 0-3) the the 'middle' two digits (digits 18-19), and then the rightmost 4 digits (digits 36-39) are concatenated. Since signer must know the from address, we can spare digits by using only parts.
+6. We put together the transaction to be encoded the following way:
 
 |0-1 digits  | 2-3 hex digits                      | 4-13. digits             |  14-53. digits |
 |------------|-------------------------------------|--------------------------|----------------|
@@ -27,28 +41,11 @@ We encode the transaction and message singning the following way:
  |----------|
  | data     |
 
-Error check byte = leftmost 2 digits (9 escaped) of the sha3(encoded, escaped and compressed full data) 
+Error check byte = leftmost 2 digits (9 escaped - see later) of the sha3(encoded, escaped and compressed full data) 
 
-## Message signing 
+### 9 Escaping and zero compression:
 
-|0-1 digits  | 2-3 digits               | n digits message | 
-|------------|--------------------------|------------------|
-|error check | Signature type + version | message bytes    |
-
-Error check byte = leftmost 2 digits of the sha3(signature + version + message bytes)
-
-Signable messages will not be encoded or compressed. Typed messages must follow the json encoding standard.
-
-1. Encode from left to right the 0 th digit is the leftmost digit.
-2. The final data contains only numbers, no letters or special characters.
-3. Digit 9 is used as an escape number to escape 9, a-f characters, delimiter, and compression encoding.
-   The reason for this is that QR codes allow 1.6 times more numeric than alphanumeric characters.
-4. Since ethereum transactions use a lot of zeros, we use compression for zeros. 
-5. We encode the from address in a way that we use its leftmost 4 hex digits (digits 0-3) the the 'middle' two digits (digits 18-19), and then the rightmost 4 digits (digits 36-39) are concatenated. Since signer must know the from address, we can spare digits by using only parts.
-
-## Escaping and compression:
-
-### Escaping 
+#### 9 Escaping 
 
 1. First the alphanumeric code will be escaped with digit 9 in order to remove letters a-f and delimiters between variable length fields. 
 
@@ -60,12 +57,12 @@ Signable messages will not be encoded or compressed. Typed messages must follow 
 | d                   | 93            |                                         |
 | e                   | 94            |                                         |
 | f                   | 95            |                                         |
-| |                   | 96            | delimiter between variable length data  |
+| '|'                 | 96            | delimiter between variable length data  |
 | zero compression    | 97            | compress zeros (see later)              |
 | reserved, do not use| 98            |                                         |
 | 9                   | 99            |                                         |
 
-### Zero compression
+#### Zero compression
 
 The reason of zero compression is to compress the many zeros in ethereum transactions arising because of 0 padding.
 
@@ -89,10 +86,11 @@ we would start from the left and check what is the biggest 0 chunk we can compre
 since that is the biggest chunk we can compress at once. And the next would be 6 more zeros.
 so the encoded hex would be: 974972290 th This is much shorter than the original, and contains only numbers.
  
-
-0 th byte (leftmost) byte encoded in hex, and then escaped with 9:
-
 ### Transaction and message signing 
+
+2-3 digits encoded in hex, and then 9 escaped. This contains the Protocol version encoding, the signing type and the chainId. 
+
+#### Protocol version encoding
 
 0-1 bits (lowest bits): Protocol version
 
@@ -100,6 +98,8 @@ so the encoded hex would be: 974972290 th This is much shorter than the original
 |-------------------------------|
 |0            | Current version |
 |1-3          | Future versions |
+
+#### Signing type encoding
 
 2-3 bits: signing type
 
@@ -110,7 +110,7 @@ so the encoded hex would be: 974972290 th This is much shorter than the original
 | 2            | sign_personal_message |
 | 3            | sign_typed_data       |
 
-### Transaction signing encoding:
+#### ChainId encoding
 
 0 th byte 4-7 bits: ChainId
 
