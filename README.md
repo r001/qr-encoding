@@ -103,40 +103,40 @@ so the encoded hex would be: 974972290 th This is much shorter than the original
 
 0-1 bits (lowest bits): Protocol version
 
-|Code (hex)   | Meaning         |
-|-------------------------------|
-|0            | Current version |
-|1-3          | Future versions |
+| Code (hex)       | Meaning         |
+|------------------|-----------------|
+| ``0``            | Current version |
+| ``1-3``          | Future versions |
 
 #### Signing type encoding
 
 2-3 bits: signing type
 
-| Code (hex)   | Meaning               |
-|--------------|-----------------------|
-| 0            | sign_transaction      |
-| 1            | sign_message          |
-| 2            | sign_personal_message |
-| 3            | sign_typed_data       |
+| Code (hex)       | Meaning               |
+|------------------|-----------------------|
+| ``0``            | sign_transaction      |
+| ``1``            | sign_message          |
+| ``2``            | sign_personal_message |
+| ``3``            | sign_typed_data       |
 
 #### ChainId encoding
 
 4-7 bits: ChainId
 
-| Code (hex)   | Meaning                                                                      |
-|--------------|------------------------------------------------------------------------------|
-| 0            | 1: Frontier, Homestead, Metropolis, the Ethereum public main network         |
-| 1            | 1: Classic, the (un)forked public Ethereum Classic main network, chain ID 61 |
-| 2            | 1: Expanse, an alternative Ethereum implementation, chain ID 2               |
-| 3            | 2: Morden, the public Ethereum testnet, now Ethereum Classic testnet         |
-| 4            | 3: Ropsten, the public cross-client Ethereum testnet                         | 
-| 5            | 4: Rinkeby, the public Geth PoA testnet                                      |
-| 6            | 42: Kovan, the public Parity PoA testnet                                     |
-| 7            | 77: Sokol, the public POA Network testnet                                    |
-| 8 (!!!)      | chainId encoded starting in the 54 th digit, and not here!!!!                |
-| 9            | 99: Core, the public POA Network main network                                |
-| a            | 7762959: Musicoin, the music blockchain                                      |
-| a-f          | reserved                                                                     |
+| Code (hex)       | Meaning                                                                      |
+|------------------|------------------------------------------------------------------------------|
+| ``0``            | 1: Frontier, Homestead, Metropolis, the Ethereum public main network         |
+| ``1``            | 1: Classic, the (un)forked public Ethereum Classic main network, chain ID 61 |
+| ``2``            | 1: Expanse, an alternative Ethereum implementation, chain ID 2               |
+| ``3``            | 2: Morden, the public Ethereum testnet, now Ethereum Classic testnet         |
+| ``4``            | 3: Ropsten, the public cross-client Ethereum testnet                         | 
+| ``5``            | 4: Rinkeby, the public Geth PoA testnet                                      |
+| ``6``            | 42: Kovan, the public Parity PoA testnet                                     |
+| ``7``            | 77: Sokol, the public POA Network testnet                                    |
+| ``8`` (!!!)      | chainId encoded starting in the 54 th digit, and not here!!!!                |
+| ``9``            | 99: Core, the public POA Network main network                                |
+| ``a``            | 7762959: Musicoin, the music blockchain                                      |
+| ``a-f``          | reserved                                                                     |
 
 Eg.: 
 - To sign a transaction on mainnet: 0 th byte is be 0 (version code) + 0 (sign transaction) * 4 + 16 * 0 (chain id = 0)  = 0x00 
@@ -147,7 +147,7 @@ Eg.:
 
 Let's start with the following th json data:
 
-{"type":"sign_transaction": <br>
+``{"type":"sign_transaction": <br>
 "from":"0x1204d2a2f9a823c1a585fde6514a17ff695e0001",<br>
 "to":"0xb2565129883cfffe21a88eeafaa3ccd9ec5f6539",<br>
 "chainId":"1",<br>
@@ -155,7 +155,7 @@ Let's start with the following th json data:
 "gasPrice":"0x0165a0bc00",<br>
 "gasLimit":"0x5208",<br>
 "value":"0x68155a43676e00000",<br>
-"data":"0x000000000000000000000000000000af00000000000000000000000023ff99"}<br>
+"data":"0x000000000000000000000000000000af00000000000000000000000023ff99"}<br>``
 
 #### Transaction encoding example
 
