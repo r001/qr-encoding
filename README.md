@@ -7,25 +7,25 @@ We encode the transaction and message singning the following way:
 ## Transaction encoding 
 
 |0-1 digits  | 2-3 hex digits                      | 4-13. digits             |  14-53. digits |
-|------------|-------------------------------------|--------------------------|----------------| ...
+|------------|-------------------------------------|--------------------------|----------------|
 |error check | Signature type + chain id + version | from address (only part) | to address     |
 
 
-    | n digits delimited (only present if not encoded in 0-1 digits) | delimiter                          |
-... |----------------------------------------------------------------|------------------------------------| ...
-    | chainId (only if was not encoded into the 2-3 digits)          | (if chainId was encoded before)    |
+ | n digits delimited (only present if not encoded in 0-1 digits) | delimiter                          |
+ |----------------------------------------------------------------|------------------------------------|
+ | chainId (only if was not encoded into the 2-3 digits)          | (if chainId was encoded before)    |
 
-    | n digits delimited | delimiter | n digits delimited | delimiter | 
-... |--------------------|-----------|--------------------|-----------| ...
-    | nonce              |           |  gasPrice          |           |
+ | n digits delimited | delimiter | n digits delimited | delimiter | 
+ |--------------------|-----------|--------------------|-----------| 
+ | nonce              |           |  gasPrice          |           |
 
-    | n digits delimited | delimiter | n digits delimited | delimiter |  
-... |--------------------|-----------|--------------------|-----------| ...
-    | gasLimit           |           |  value             |           |
+ | n digits delimited | delimiter | n digits delimited | delimiter |  
+ |--------------------|-----------|--------------------|-----------| 
+ | gasLimit           |           |  value             |           |
 
-    | n digits |
-... |----------|
-    | data     |
+ | n digits |
+ |----------|
+ | data     |
 
 Error check byte = leftmost 2 digits (9 escaped) of the sha3(encoded, escaped and compressed full data) 
 
