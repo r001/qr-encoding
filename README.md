@@ -147,15 +147,15 @@ Eg.:
 
 Let's start with the following th json data:
 
-``{"type":"sign_transaction": 
-"from":"0x1204d2a2f9a823c1a585fde6514a17ff695e0001",
-"to":"0xb2565129883cfffe21a88eeafaa3ccd9ec5f6539",
-"chainId":"1",
-"nonce":"0x2d",
-"gasPrice":"0x0165a0bc00",
-"gasLimit":"0x5208",
-"value":"0x68155a43676e00000",
-"data":"0x000000000000000000000000000000af00000000000000000000000023ff99"}``
+{"type":"sign_transaction": <br>
+"from":"0x1204d2a2f9a823c1a585fde6514a17ff695e0001",<br>
+"to":"0xb2565129883cfffe21a88eeafaa3ccd9ec5f6539",<br>
+"chainId":"1",<br>
+"nonce":"0x2d",<br>
+"gasPrice":"0x0165a0bc00",<br>
+"gasLimit":"0x5208",<br>
+"value":"0x68155a43676e00000",<br>
+"data":"0x000000000000000000000000000000af00000000000000000000000023ff99"}
 
 #### Transaction encoding example
 
