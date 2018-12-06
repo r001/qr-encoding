@@ -232,7 +232,8 @@ To decode the above we do the following:
 The rightmost two digits bf match with the error check code of bf, so we are fine. (If not then the QR code we read was probably wrong.)
 
 3. We 9 unescape the code. 
-!!!!!This should be the first unescape. Otherwise the code will be wrong!!!!!
+
+**!!!!!This should be the first unescape. Otherwise the code will be wrong!!!!!**
 
 First we mark all 99 in the code to get:
 ``00120485000191256512m88392959595942190889494909590903929293m9492595653m2939601659009192009652089668155904367694971969749729095974239595mm``
