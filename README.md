@@ -1,4 +1,4 @@
-# QR transaction-, and message signing encoding rules.
+# QR transaction-, and message signing encoding rules
 
 The purpose of this document is to describe an efficient way of encoding Ethereum transactions in order to be transmitted over using QR codes. Since the amount of data to be transmitted is very limited we apply simple compression, and create numeric codes, since it is more effectively transmittable busing QR codes.
 
