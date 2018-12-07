@@ -44,7 +44,7 @@ We put together the transaction in four steps:
 
 | n digits delimited (only present if not encoded in 0-1 digits) | delimiter                          |
 |----------------------------------------------------------------|------------------------------------|
-| chainId (only if was not encoded into the 2-3 digits)          | (if chainId was encoded before)    |
+| chainId (only if was not encoded into the 0-1 digits)          | (if chainId was encoded before)    |
 
 | n digits delimited | delimiter | n digits delimited | delimiter | 
 |--------------------|-----------|--------------------|-----------| 
@@ -57,6 +57,8 @@ We put together the transaction in four steps:
 | n digits |
 |----------|
 | data     |
+
+From address: Only the lefmost 4, 18-19 th (counting from 0 th) , and the rightmost 4 digits is kept from the from address.
 
 #### Transaction and message signing 
 
@@ -100,6 +102,8 @@ We put together the transaction in four steps:
 | ``9``            | 99: Core, the public POA Network main network                                |
 | ``a``            | 7762959: Musicoin, the music blockchain                                      |
 | ``a-f``          | reserved                                                                     |
+
+If the chainId of the network differs from the above, then choinId '8' should be encoded here, and chainId should be encoded into digit no. 52 of the "flat string", and a delimiter should be placed after. 
 
 Eg.: 
 - To sign a transaction on mainnet: 0 th byte is be 0 (version code) + 0 (sign transaction) * 4 + 16 * 0 (chain id = 0)  = 0x00 
@@ -292,5 +296,5 @@ Then substitute 9 instead of 'm':
 
 Notes:
 - Lets check the leftmost two digits. Since it is 00 we know that we got a version 0, and we must sign a transaction. 
-- Since the chainId was encoded 0 which means we are signing an Ethereum mainnet tx. That also means that the 2d does not represent a chainId (since it was already encoded in the 2-3 hex digit). If we had received a 2-3 hex digit of 18 this is dedimal 24. Since 24 % 16 = 8, this would mean that the chainId was not encoded in the 2-3 digits, but is encoded after the to address starting at 54 th digit. 
+- Since the chainId was encoded 0 which means we are signing an Ethereum mainnet tx. That also means that the 2d does not represent a chainId (since it was already encoded in the 0-1 hex digit). If we had received a 0-1 hex digit of 18 this is dedimal 24. Since 24 % 16 = 8, this would mean that the chainId was not encoded in the 0-1 digits, but is encoded after the to address starting at 52 th digit. 
 - The from address can be easily determined at signer from digits 2-11 by comparing corresponding digits. 
