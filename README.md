@@ -27,12 +27,13 @@ The Transaction encoding has the following characteristics:
    The reason for this is that QR codes allow 1.6 times more numeric than alphanumeric characters.
 4. Since ethereum transactions use a lot of zeros, we use compression for zeros. 
 5. We encode the from address in a way that we use its leftmost 4 hex digits (digits 0-3) the the 'middle' two digits (digits 18-19), and then the rightmost 4 digits (digits 36-39) are concatenated. Since signer must know the from address, we can spare digits by using only parts.
-6. We put together the transaction in three steps:
+
+We put together the transaction in four steps:
 
 1. A "flat string" representation of the transaction is created, that contains no unnecessary characters, and in which we put the fixed width components together to spare delimiters.
-2. The "flat string" is escaped (called 9 escape) to create a numeric string.
-3. The numeric string compressed to create a compressed numeric string.
-4. The compressed numeric string receives an error check byte to create a verified string.
+2. The "flat string" is escaped (called 9 escape) to create a "numeric string".
+3. The numeric string is "zero compressed" to create a "compressed numeric string".
+4. The compressed numeric string receives an error check byte to create a "verifiable string".
 
 ### The "flat string" representation of the transaction
 
@@ -56,8 +57,6 @@ The Transaction encoding has the following characteristics:
 | n digits |
 |----------|
 | data     |
-
-Error check = rightmost 2 digits (9 escaped - see later) of the sha3(encoded, escaped and compressed full data) 
 
 #### Transaction and message signing 
 
@@ -107,11 +106,11 @@ Eg.:
 - To sign a transaction on Kovan: 0 th byte is  0 (version code) + 0 (sign transaction) * 4 + 16 * 6 (code of kovan) = 0x30 
 - To sign a message on kovan: 0 th byte is  0 (version code) + 1 (sign message) * 4 + 16 * 6 (code of kovan) = 0x34 
 
-### "9 Escaping" and zero compression:
+### Numeric string creation
 
 The process during which form an alphanumeric code containing chars of 0-9 a-f, we create a code that solely contains numeric 0-9 characters. We do this using escaping 9, a-f characters using '9'. This is useful since using numeric characters only, QR code can transmit 1.6 times more data, than in case of alphanumeric data.
 
-#### "9 Escaping" 
+#### "9 escape" flat transactions string
 
 1. First the alphanumeric code will be escaped with digit 9 in order to remove letters a-f and delimiters between variable length fields. 
 
@@ -130,7 +129,7 @@ The process during which form an alphanumeric code containing chars of 0-9 a-f, 
 
 The rationale of this step is that QR codes can transmit 1.6 times more numeric, than alphanumeric data. We are still better off with escaping, than with using alphanumeric mode.
 
-### Zero compression
+### Compressed numeric string creation using zero compression
 
 The reason of zero compression is to compress the many zeros in ethereum transactions, arising because of 0 padding.
 
@@ -154,6 +153,18 @@ we would start from the left and check what is the biggest 0 chunk we can compre
 since that is the biggest chunk we can compress at once. And the next would be 6 more zeros.
 so the encoded hex would be: 974972290 th This is much shorter than the original, and contains only numbers.
  
+### Verifiable string creation with error check byte
+
+After the zero compressed numeric string has been created, we calculate an error checking 
+
+Verifiable string looks like the following:
+
+| 0-1 digits       | n digits                       |
+|------------------|--------------------------------|
+| Error check      | Zero compressed numeric string |
+
+The error check is created using the rightmost two digits of keccak256(Zero compressed numeric string).
+
 ## A complete example
 
 Let's start with the following transaction json data:
