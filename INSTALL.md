@@ -1,9 +1,9 @@
 # Installing
 
 To install the QR coding software:
-`git clone https://github.com/r001/qr-encoding.git`
-`cd qr-encoding`
-`npm install`
+`git clone https://github.com/r001/qr-encoding.git` <br>
+`cd qr-encoding`<br>
+`npm install`<br>
 
 # Running
 
@@ -14,7 +14,7 @@ To encode run the following:
 To decode please run:
 `node index.js d <uri>`
 
-#Examples
+# Examples
 
 Encoding:
 
