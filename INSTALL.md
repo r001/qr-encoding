@@ -9,16 +9,16 @@ To install the QR coding software:<br>
 
 To encode run the following:
 
-`node qr e <json>`
+`node qr encode <json>`
 
 To decode please run:
-`node qr d <uri>`
+`node qr decode <uri>`
 
 # Examples
 
 Encoding:
 
-`node qr e '{"payload":{"chainId":1,"from":"0x23f41234567123456785123456781234567825ce","to":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","nonce":"0x2d","gasPrice":"0x0165a0bc0
+`node qr encode '{"payload":{"chainId":1,"from":"0x23f41234567123456785123456781234567825ce","to":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","nonce":"0x2d","gasPrice":"0x0165a0bc0
 0","gasLimit":"0xa617","value":"0x016345785d8971","data":"0xd0e30db0"},"type":"sign_transaction","from":"
 0x23f41234567123456785123456781234567825ce"}'`
 
@@ -28,7 +28,7 @@ Will result:
 
 To decode above:
 
-`node qr d eths:/?t=780023954852592949202909090399912239594893090094592
+`node qr decode eths:/?t=780023954852592949202909090399912239594893090094592
 49527949093990839275692922293960165900919200969061796016345785938997196930943093910`
 
 It will result:
