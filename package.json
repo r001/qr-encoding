@@ -1,0 +1,13 @@
+{
+  "name": "qr-encode",
+  "version": "1.0.0",
+  "description": "Encodes json format of ethereum transaction into numeric string",
+  "main": "index.js",
+  "repository": "https://github.com/r001/qr-encoding.git",
+  "author": "r001 <rob@nyar.eu>",
+  "license": "MIT",
+  "dependencies": {
+    "ethereumjs-util": "github:ethereumjs/ethereumjs-util#ac5d0908536b447083ea422b435da27f26615de9",
+    "commander": "^2.9.0"
+  }
+}
