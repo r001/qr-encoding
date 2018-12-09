@@ -1,6 +1,6 @@
 # Installing
 
-To install the QR coding software:
+To install the QR coding software:<br>
 `git clone https://github.com/r001/qr-encoding.git` <br>
 `cd qr-encoding`<br>
 `npm install`<br>
