@@ -55,7 +55,7 @@ const encode = (sign) => {
       var signChainVersion = ethUtil.stripHexPrefix(ethUtil.intToHex(signingType * 4 + chainCode * 16))
       var flatStr = signChainVersion + partFrom
       flatStr += ethUtil.stripHexPrefix(tx.to)
-      flatStr += chainCode === 8 ? ethUtil.stripHexPrefix(ethUtil.intToHex(chainId)) + '|' : ''
+      flatStr += chainCode === 8 ? chainId.toString() + '|' : ''
       flatStr += ethUtil.stripHexPrefix(tx.nonce) + '|'
       flatStr += ethUtil.stripHexPrefix(tx.gasPrice) + '|'
       flatStr += ethUtil.stripHexPrefix(tx.gasLimit) + '|'
@@ -230,8 +230,11 @@ const decode = (encoded) => {
       chainId = encoded.substr(0, delimiter)
       encoded = encoded.slice(delimiter + 1)
     }
-    tx.chainId = chainId
-
+    try {
+      tx.chainId = parseInt(chainId)
+    } catch (e) {
+      throw new Error('chainId should be a valid integer.')
+    }
     delimiter = encoded.search('\\|')
     var nonce = encoded.substr(0, delimiter)
     encoded = encoded.slice(delimiter + 1)
