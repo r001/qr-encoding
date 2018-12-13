@@ -91,7 +91,7 @@ const encode = (sign) => {
 const decode = (encoded) => {
   if (encoded.split('eths:/?m=').length > 1) {
     return {
-      type: 'signed_message',
+      type: 'sign_message',
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
