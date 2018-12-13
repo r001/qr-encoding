@@ -7,14 +7,11 @@ const encode = (sign) => {
         fromAddress.substr(18, 2) + fromAddress.slice(-4)
   switch (signable.type) {
     case 'sign_message':
-      console.info('eths:/?m=' + partFrom + signable.payloadd)
-      return
+      return 'eths:/?m=' + partFrom + signable.payload
     case 'sign_personal_message':
-      console.info('eths:/?p=' + partFrom + signable.payload)
-      return
+      return 'eths:/?p=' + partFrom + signable.payload
     case 'sign_typed_data':
-      console.info('eths:/?y=' + partFrom + signable.payload)
-      return
+      return 'eths:/?y=' + partFrom + signable.payload
     case 'sign_transaction':
       const tx = signable.payload
       var chainId = tx.chainId
@@ -93,31 +90,28 @@ const encode = (sign) => {
 
 const decode = (encoded) => {
   if (encoded.split('eths:/?m=').length > 1) {
-    console.info(JSON.stingify({
+    return {
       type: 'signed_message',
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}))
-    return
+      payload: encoded.slice(19)}
   }
   if (encoded.split('eths:/?p=').length > 1) {
-    console.info(JSON.stingify({
+    return {
       type: 'sign_personal_message',
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}))
-    return
+      payload: encoded.slice(19)}
   }
   if (encoded.split('eths:/?y=').length > 1) {
-    console.info(JSON.stingify({
+    return {
       type: 'sign_typed_data',
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}))
-    return
+      payload: encoded.slice(19)}
   }
   if (encoded.split('eths:/?t=').length > 1) {
     encoded = encoded.split('eths:/?t=')[1]
