@@ -87,8 +87,7 @@ const encode = (sign) => {
         .replace(/d/g, '93')
         .replace(/e/g, '94')
         .replace(/f/g, '95')
-      console.info('eths:/?t=' + errorChk + zeroCompStr)
-      return
+      return 'eths:/?t=' + errorChk + zeroCompStr
   }
 }
 
@@ -256,12 +255,11 @@ const decode = (encoded) => {
     tx.value = '0x' + value
     tx.data = '0x' + encoded
 
-    console.info(JSON.stringify({
+    return {
       payload: tx,
       type: 'sign_transaction',
       from_part: tx.from_part,
-    }))
-    return
+    }
   }
   throw new Error('Unknown signature type.')
 }
