@@ -60,9 +60,14 @@ const encode = (sign) => {
       flatStr += ethUtil.stripHexPrefix(tx.data)
       flatStr = flatStr.toLowerCase()
 
+      const esc9 = flatStr.replace(/9/g, 'n')
+
+      // zero compressing
+      const zeroCompStr = esc9.replace(/0{48}/g, '975').replace(/0{24}/g, '974').replace(/0{12}/g, '973').replace(/0{6}/g, '972').replace(/0{5}/g, '971').replace(/0{4}/g, '970')
+
       // escape all '9' in flat string
-      const numStr = flatStr
-        .replace(/9/g, '99')
+      const numStr = zeroCompStr
+        .replace(/n/g, '99')
         .replace(/a/g, '90')
         .replace(/b/g, '91')
         .replace(/c/g, '92')
@@ -71,9 +76,7 @@ const encode = (sign) => {
         .replace(/f/g, '95')
         .replace(/\|/g, '96')
 
-      // zero compressing
-      const zeroCompStr = numStr.replace(/0{48}/g, '975').replace(/0{24}/g, '974').replace(/0{12}/g, '973').replace(/0{6}/g, '972').replace(/0{5}/g, '971').replace(/0{4}/g, '970')
-      var errorChk = ethUtil.stripHexPrefix(ethUtil.bufferToHex(ethUtil.sha3(ethUtil.toBuffer(zeroCompStr))).slice(-2))
+      var errorChk = ethUtil.stripHexPrefix(ethUtil.bufferToHex(ethUtil.sha3(ethUtil.toBuffer(numStr))).slice(-2))
 
       // error check
       errorChk = errorChk
@@ -84,7 +87,7 @@ const encode = (sign) => {
         .replace(/d/g, '93')
         .replace(/e/g, '94')
         .replace(/f/g, '95')
-      return 'eths:/?t=' + errorChk + zeroCompStr
+      return 'eths:/?t=' + errorChk + numStr
   }
 }
 
@@ -117,14 +120,14 @@ const decode = (encoded) => {
     encoded = encoded.split('eths:/?t=')[1]
     var errorChk = encoded
       .substr(0, 4)
-      .replace(/99/g, 'm')
+      .replace(/99/g, 'n')
       .replace(/90/g, 'a')
       .replace(/91/g, 'b')
       .replace(/92/g, 'c')
       .replace(/93/g, 'd')
       .replace(/94/g, 'e')
       .replace(/95/g, 'f')
-      .replace(/m/g, '9')
+      .replace(/n/g, '9')
     errorChk = errorChk.substr(0, 2)
     var encErrChk = errorChk
       .replace(/9/g, '99')
@@ -140,7 +143,7 @@ const decode = (encoded) => {
       throw new Error('Encoded data is corrupted.')
     }
     encoded = encoded
-      .replace(/99/g, 'm')
+      .replace(/99/g, 'n')
       .replace(/90/g, 'a')
       .replace(/91/g, 'b')
       .replace(/92/g, 'c')
@@ -154,7 +157,7 @@ const decode = (encoded) => {
       .replace(/973/g, '000000000000')
       .replace(/974/g, '000000000000000000000000')
       .replace(/975/g, '000000000000000000000000000000000000000000000000')
-      .replace(/m/g, '9')
+      .replace(/n/g, '9')
     var typeChainVersion = ethUtil.bufferToInt(ethUtil.toBuffer('0x' + encoded.substr(0, 2)))
     var version = typeChainVersion % 4
     if (version !== 0) {
