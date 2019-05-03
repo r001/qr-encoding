@@ -7,11 +7,11 @@ const encode = (sign) => {
         fromAddress.substr(18, 2) + fromAddress.slice(-4)
   switch (signable.type) {
     case 'sign_message':
-      return 'eths:/?m=' + partFrom + signable.payload
+      return 'eths:/?m=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_personal_message':
-      return 'eths:/?p=' + partFrom + signable.payload
+      return 'eths:/?p=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_typed_data':
-      return 'eths:/?y=' + partFrom + signable.payload
+      return 'eths:/?y=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_transaction':
       const tx = signable.payload
       var chainId = tx.chainId
@@ -98,7 +98,7 @@ const decode = (encoded) => {
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}
+      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
   if (encoded.split('eths:/?p=').length > 1) {
     return {
@@ -106,7 +106,7 @@ const decode = (encoded) => {
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}
+      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
   if (encoded.split('eths:/?y=').length > 1) {
     return {
@@ -114,7 +114,7 @@ const decode = (encoded) => {
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
-      payload: encoded.slice(19)}
+      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
   if (encoded.split('eths:/?t=').length > 1) {
     encoded = encoded.split('eths:/?t=')[1]
