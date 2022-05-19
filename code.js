@@ -3,19 +3,29 @@ const ethUtil = require('ethereumjs-util')
 const encode = (sign) => {
   const signable = JSON.parse(sign)
   const fromAddress = ethUtil.stripHexPrefix(signable.from)
+
   const partFrom = fromAddress.substr(0, 4) +
-        fromAddress.substr(18, 2) + fromAddress.slice(-4)
+    fromAddress.substr(18, 2) + fromAddress.slice(-4)
+  
+	const v = signable.version
+  var y
+	const tx = signable.payload
+	var chainId = tx.chainId
+	var chainCode
+	var esc9, zeroCompStr, numStr
   switch (signable.type) {
     case 'sign_message':
-      return 'eths:/?m=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
+      return 'ETHS:/M' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_personal_message':
-      return 'eths:/?p=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
+      return 'ETHS:/P' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_typed_data':
-      return 'eths:/?y=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
+      // version V3: a
+      // version V4: b
+      // version V5: c
+      // ...
+      y = String.fromCharCode('A'.charCodeAt(0) + v.charCodeAt(1) - '3'.charCodeAt(0))
+      return 'ETHS:/' + y + '=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_transaction':
-      const tx = signable.payload
-      var chainId = tx.chainId
-      var chainCode
       switch (chainId) {
         case 1:
           chainCode = 0
@@ -60,13 +70,13 @@ const encode = (sign) => {
       flatStr += ethUtil.stripHexPrefix(tx.data)
       flatStr = flatStr.toLowerCase()
 
-      const esc9 = flatStr.replace(/9/g, 'n')
+      esc9 = flatStr.replace(/9/g, 'n')
 
       // zero compressing
-      const zeroCompStr = esc9.replace(/0{48}/g, '975').replace(/0{24}/g, '974').replace(/0{12}/g, '973').replace(/0{6}/g, '972').replace(/0{5}/g, '971').replace(/0{4}/g, '970')
+      zeroCompStr = esc9.replace(/0{48}/g, '975').replace(/0{24}/g, '974').replace(/0{12}/g, '973').replace(/0{6}/g, '972').replace(/0{5}/g, '971').replace(/0{4}/g, '970')
 
       // escape all '9' in flat string
-      const numStr = zeroCompStr
+      numStr = zeroCompStr
         .replace(/n/g, '99')
         .replace(/a/g, '90')
         .replace(/b/g, '91')
@@ -87,12 +97,14 @@ const encode = (sign) => {
         .replace(/d/g, '93')
         .replace(/e/g, '94')
         .replace(/f/g, '95')
-      return 'eths:/?t=' + errorChk + numStr
+
+      return 'ETHS:/T' + errorChk + numStr
   }
 }
 
 const decode = (encoded) => {
-  if (encoded.split('eths:/?m=').length > 1) {
+  encoded = encoded.replace(/^[^E]*/, '').replace(/\s*$/, '')
+  if (encoded.split('ETHS:/M').length > 1) {
     return {
       type: 'sign_message',
       from_part: '0x' + encoded.substr(9, 4) +
@@ -100,7 +112,7 @@ const decode = (encoded) => {
       '................' + encoded.substr(15, 4),
       payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
-  if (encoded.split('eths:/?p=').length > 1) {
+  if (encoded.split('ETHS:/P').length > 1) {
     return {
       type: 'sign_personal_message',
       from_part: '0x' + encoded.substr(9, 4) +
@@ -108,16 +120,19 @@ const decode = (encoded) => {
       '................' + encoded.substr(15, 4),
       payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
-  if (encoded.split('eths:/?y=').length > 1) {
+  if (encoded.split(/ETHS:\/\?[A-L]=/).length > 1) {
+    var version = encoded.match(/ETHS:\/\?([A-L])=/)[1].charCodeAt(0) - 'A'.charCodeAt(0) + 3
     return {
       type: 'sign_typed_data',
+      version: 'V' + version,
       from_part: '0x' + encoded.substr(9, 4) +
       '..............' + encoded.substr(13, 2) +
       '................' + encoded.substr(15, 4),
       payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
   }
-  if (encoded.split('eths:/?t=').length > 1) {
-    encoded = encoded.split('eths:/?t=')[1]
+  if (encoded.split('ETHS:/T').length > 1) {
+    encoded = encoded.split('ETHS:/T')[1]
+
     var errorChk = encoded
       .substr(0, 4)
       .replace(/99/g, 'n')
@@ -128,8 +143,10 @@ const decode = (encoded) => {
       .replace(/94/g, 'e')
       .replace(/95/g, 'f')
       .replace(/n/g, '9')
+
     errorChk = errorChk.substr(0, 2)
-    var encErrChk = errorChk
+    
+		var encErrChk = errorChk
       .replace(/9/g, '99')
       .replace(/a/g, '90')
       .replace(/b/g, '91')
@@ -137,11 +154,13 @@ const decode = (encoded) => {
       .replace(/d/g, '93')
       .replace(/e/g, '94')
       .replace(/f/g, '95')
+
     encoded = encoded.slice(encErrChk.length)
     if (errorChk !== ethUtil.bufferToHex(ethUtil.sha3(ethUtil.toBuffer(encoded))).slice(-2)) {
       console.info('Encoded:' + encoded + ' Errorchk:' + errorChk + ' Sha3: ' + ethUtil.bufferToHex(ethUtil.sha3(ethUtil.toBuffer(encoded))))
       throw new Error('Encoded data is corrupted.')
     }
+
     encoded = encoded
       .replace(/99/g, 'n')
       .replace(/90/g, 'a')
@@ -158,8 +177,9 @@ const decode = (encoded) => {
       .replace(/974/g, '000000000000000000000000')
       .replace(/975/g, '000000000000000000000000000000000000000000000000')
       .replace(/n/g, '9')
+
     var typeChainVersion = ethUtil.bufferToInt(ethUtil.toBuffer('0x' + encoded.substr(0, 2)))
-    var version = typeChainVersion % 4
+    version = typeChainVersion % 4
     if (version !== 0) {
       throw new Error('Unknown version:' + typeChainVersion % 4)
     }
@@ -216,9 +236,11 @@ const decode = (encoded) => {
     }
     var tx = {}
     if (chainId) tx.chainId = chainId
+
     tx.from_part = '0x' + encoded.substr(2, 4) +
       '..............' + encoded.substr(6, 2) +
       '................' + encoded.substr(8, 4)
+
     tx.to = '0x' + encoded.substr(12, 40)
     encoded = encoded.slice(52)
     if (!chainId) {
