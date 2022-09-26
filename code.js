@@ -114,6 +114,7 @@ const decode = (encoded) => {
       payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(10))}
   }
   if (encoded.split(/ETHS:\/P/i).length > 1) {
+		encoded = encoded.split(/ETHS:\/P/i)[1]
     return {
       type: 'sign_personal_message',
       from_part: '0x' + encoded.substr(0, 4) +
