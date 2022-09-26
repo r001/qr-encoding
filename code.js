@@ -24,7 +24,7 @@ const encode = (sign) => {
       // version V5: c
       // ...
       y = String.fromCharCode('A'.charCodeAt(0) + v.charCodeAt(1) - '3'.charCodeAt(0))
-      return 'ETHS:/' + y + '=' + partFrom + ethUtil.stripHexPrefix(signable.payload)
+      return 'ETHS:/' + y + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_transaction':
       switch (chainId) {
         case 1:
@@ -103,35 +103,37 @@ const encode = (sign) => {
 }
 
 const decode = (encoded) => {
-  encoded = encoded.replace(/^[^E]*/, '').replace(/\s*$/, '')
-  if (encoded.split('ETHS:/M').length > 1) {
+  encoded = encoded.replace(/^[^Ee]*/i, '').replace(/\s*$/, '')
+  if (encoded.split(/ETHS:\/M/i).length > 1) {
+		encoded = encoded.split(/ETHS:\/M/i)[1]
     return {
       type: 'sign_message',
-      from_part: '0x' + encoded.substr(9, 4) +
-      '..............' + encoded.substr(13, 2) +
-      '................' + encoded.substr(15, 4),
-      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
+      from_part: '0x' + encoded.substr(0, 4) +
+      '..............' + encoded.substr(4, 2) +
+      '................' + encoded.substr(6, 4),
+      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(10))}
   }
-  if (encoded.split('ETHS:/P').length > 1) {
+  if (encoded.split(/ETHS:\/P/i).length > 1) {
     return {
       type: 'sign_personal_message',
-      from_part: '0x' + encoded.substr(9, 4) +
-      '..............' + encoded.substr(13, 2) +
-      '................' + encoded.substr(15, 4),
-      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
+      from_part: '0x' + encoded.substr(0, 4) +
+      '..............' + encoded.substr(4, 2) +
+      '................' + encoded.substr(6, 4),
+      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(10))}
   }
-  if (encoded.split(/ETHS:\/\?[A-L]=/).length > 1) {
-    var version = encoded.match(/ETHS:\/\?([A-L])=/)[1].charCodeAt(0) - 'A'.charCodeAt(0) + 3
+  if (encoded.split(/ETHS:\/[A-L]/i).length > 1) {
+    var version = encoded.match(/ETHS:\/([A-L])/i)[1].charCodeAt(0) - 'A'.charCodeAt(0) + 3
+		encoded = encoded.split(/ETHS:\/[A-L]/i)[1]
     return {
       type: 'sign_typed_data',
       version: 'V' + version,
-      from_part: '0x' + encoded.substr(9, 4) +
-      '..............' + encoded.substr(13, 2) +
-      '................' + encoded.substr(15, 4),
-      payload: '0x' + ethUtil.stripHexPrefix(encoded.slice(19))}
+      from_part: '0x' + encoded.substr(0, 4) +
+      '..............' + encoded.substr(4, 2) +
+      '................' + encoded.substr(6, 4),
+      payload: ethUtil.stripHexPrefix(encoded.slice(10))}
   }
-  if (encoded.split('ETHS:/T').length > 1) {
-    encoded = encoded.split('ETHS:/T')[1]
+  if (encoded.split(/ETHS:\/T/i).length > 1) {
+    encoded = encoded.split(/ETHS:\/T/i)[1]
 
     var errorChk = encoded
       .substr(0, 4)

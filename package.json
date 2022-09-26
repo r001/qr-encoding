@@ -1,6 +1,6 @@
 {
   "name": "qr-encoding",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Encodes json format of ethereum transaction into numeric string",
   "main": "code.js",
   "repository": "https://github.com/r001/qr-encoding.git",
