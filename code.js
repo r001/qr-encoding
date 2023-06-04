@@ -1,4 +1,11 @@
-const ethUtil = require('ethereumjs-util')
+const ethUtil = require('@ethereumjs/util')
+const rlp = require('@ethereumjs/rlp')
+const {Transaction, FeeMarketEIP_1559Transaction} = require('@ethereumjs/tx')
+const {TypedDataUtils } = require('@metamask/eth-sig-util')
+const {BcUrDecoder, } = require('@keystonehq/bc-ur-registry')
+const {EthSignRequest, DataType, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {Common} = require('@ethereumjs/common')
+const uuid = require('uuid') 
 
 const encode = (sign) => {
   const signable = JSON.parse(sign)
@@ -7,99 +14,44 @@ const encode = (sign) => {
   const partFrom = fromAddress.substr(0, 4) +
     fromAddress.substr(18, 2) + fromAddress.slice(-4)
   
-	const v = signable.version
-  var y
+	const version = signable.version
 	const tx = signable.payload
-	var chainId = tx.chainId
-	var chainCode
-	var esc9, zeroCompStr, numStr
+	const derivePath = CryptoKeypath.fromPathString(signable.derivePath)
+	var rlpEncoded
+	let sanitizedTypedData
+	let EIP_1559 = true
+	let common
+	let dataType
+	let xfp = "12345678";
   switch (signable.type) {
     case 'sign_message':
-      return 'ETHS:/M' + partFrom + ethUtil.stripHexPrefix(signable.payload)
     case 'sign_personal_message':
-      return 'ETHS:/P' + partFrom + ethUtil.stripHexPrefix(signable.payload)
+			rlpEncoded = rlp.encode(Buffer.from(signable.payload))
+			dataType = DataType.personalMessage
+			break
     case 'sign_typed_data':
       // version V3: a
       // version V4: b
       // version V5: c
       // ...
-      y = String.fromCharCode('A'.charCodeAt(0) + v.charCodeAt(1) - '3'.charCodeAt(0))
-      return 'ETHS:/' + y + partFrom + ethUtil.stripHexPrefix(signable.payload)
+			sanitizedTypedData = TypedDataUtils.sanitizeData(signable.payload)
+			rlpEncoded = TypedDataUtils.encodeData(sanitizedTypedData.primaryType, sanitizedTypedData.message, sanitizedTypedData.types, version) 
+			dataType = DataType.typedData
+			break
     case 'sign_transaction':
-      switch (chainId) {
-        case 1:
-          chainCode = 0
-          break
-        case 61:
-          chainCode = 1
-          break
-        case 2:
-          chainCode = 3 // Morden testnet
-          break
-        case 3:
-          chainCode = 4
-          break
-        case 4:
-          chainCode = 5
-          break
-        case 42:
-          chainCode = 6
-          break
-        case 77:
-          chainCode = 7
-          break
-        case 99:
-          chainCode = 9
-          break
-        case 7762959:
-          chainCode = 10
-          break
-        default:
-          chainCode = 8
-          break
-      }
-      var signingType = 0
-      var signChainVersion = ethUtil.stripHexPrefix(ethUtil.intToHex(signingType * 4 + chainCode * 16))
-      var flatStr = signChainVersion + partFrom
-      flatStr += ethUtil.stripHexPrefix(tx.to)
-      flatStr += chainCode === 8 ? chainId.toString() + '|' : ''
-      flatStr += ethUtil.stripHexPrefix(tx.nonce) + '|'
-      flatStr += ethUtil.stripHexPrefix(tx.gasPrice) + '|'
-      flatStr += ethUtil.stripHexPrefix(tx.gasLimit) + '|'
-      flatStr += ethUtil.stripHexPrefix(tx.value) + '|'
-      flatStr += ethUtil.stripHexPrefix(tx.data)
-      flatStr = flatStr.toLowerCase()
-
-      esc9 = flatStr.replace(/9/g, 'n')
-
-      // zero compressing
-      zeroCompStr = esc9.replace(/0{48}/g, '975').replace(/0{24}/g, '974').replace(/0{12}/g, '973').replace(/0{6}/g, '972').replace(/0{5}/g, '971').replace(/0{4}/g, '970')
-
-      // escape all '9' in flat string
-      numStr = zeroCompStr
-        .replace(/n/g, '99')
-        .replace(/a/g, '90')
-        .replace(/b/g, '91')
-        .replace(/c/g, '92')
-        .replace(/d/g, '93')
-        .replace(/e/g, '94')
-        .replace(/f/g, '95')
-        .replace(/\|/g, '96')
-
-      var errorChk = ethUtil.stripHexPrefix(ethUtil.bufferToHex(ethUtil.sha3(ethUtil.toBuffer(numStr))).slice(-2))
-
-      // error check
-      errorChk = errorChk
-        .replace(/9/g, '99')
-        .replace(/a/g, '90')
-        .replace(/b/g, '91')
-        .replace(/c/g, '92')
-        .replace(/d/g, '93')
-        .replace(/e/g, '94')
-        .replace(/f/g, '95')
-
-      return 'ETHS:/T' + errorChk + numStr
+			EIP_1559 = !tx.gasPrice	
+			common = new Common({chain: tx.chainId})
+			if (EIP_1559) {
+				rlpEncoded = FeeMarketEIP_1559Transaction.fromTxData(tx, {common}).serialize()
+			} else {
+				rlpEncoded = Transaction.fromTxData(tx, {common}).serialize()
+			}
+			dataType = DataType.transaction
+			break
+		default:
+			throw new Error('Unknown signable type')
   }
+	EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, uuid.v4(), BigInt(tx.chainId))
 }
 
 const decode = (encoded) => {

@@ -1,14 +1,20 @@
 {
   "name": "qr-encoding",
-  "version": "1.4.2",
+  "version": "1.5.2",
   "description": "Encodes json format of ethereum transaction into numeric string",
   "main": "code.js",
   "repository": "https://github.com/r001/qr-encoding.git",
   "author": "r001 <rob@nyar.eu>",
   "license": "MIT",
   "dependencies": {
+    "@ethereumjs/common": "^3.1.2",
+    "@ethereumjs/rlp": "^4.0.1",
+    "@ethereumjs/tx": "^4.1.2",
+    "@ethereumjs/util": "^8.0.6",
+    "@keystonehq/bc-ur-registry-eth": "^0.19.1",
+    "@metamask/eth-sig-util": "^5.1.0",
     "commander": "^2.9.0",
-    "ethereumjs-util": "github:ethereumjs/ethereumjs-util#ac5d0908536b447083ea422b435da27f26615de9"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "assert": "^2.0.0",
