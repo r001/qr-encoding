@@ -1,9 +1,9 @@
 const ethUtil = require('@ethereumjs/util')
 const rlp = require('@ethereumjs/rlp')
 const {Transaction, FeeMarketEIP_1559Transaction} = require('@ethereumjs/tx')
-const {TypedDataUtils } = require('@metamask/eth-sig-util')
-const {BcUrDecoder, } = require('@keystonehq/bc-ur-registry')
-const {EthSignRequest, DataType, CryptoKeypath, PathComponent} = require('@keystonehq/bc-ur-registry-eth')
+const {TypedDataUtils} = require('@metamask/eth-sig-util')
+const {BcUrDecoder} = require('@keystonehq/bc-ur-registry')
+const {EthSignRequest, DataType, CryptoKeypath} = require('@keystonehq/bc-ur-registry-eth')
 const {Common} = require('@ethereumjs/common')
 const uuid = require('uuid') 
 
@@ -30,10 +30,6 @@ const encode = (sign) => {
 			dataType = DataType.personalMessage
 			break
     case 'sign_typed_data':
-      // version V3: a
-      // version V4: b
-      // version V5: c
-      // ...
 			sanitizedTypedData = TypedDataUtils.sanitizeData(signable.payload)
 			rlpEncoded = TypedDataUtils.encodeData(sanitizedTypedData.primaryType, sanitizedTypedData.message, sanitizedTypedData.types, version) 
 			dataType = DataType.typedData
@@ -51,7 +47,7 @@ const encode = (sign) => {
 		default:
 			throw new Error('Unknown signable type')
   }
-	EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, uuid.v4(), BigInt(tx.chainId))
+	return EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, uuid.v4(), BigInt(tx.chainId))
 }
 
 const decode = (encoded) => {
