@@ -1,53 +1,47 @@
 const ethUtil = require('@ethereumjs/util')
 const rlp = require('@ethereumjs/rlp')
-const {Transaction, FeeMarketEIP_1559Transaction} = require('@ethereumjs/tx')
+const {Transaction, FeeMarketEIP1559Transaction} = require('@ethereumjs/tx')
 const {TypedDataUtils} = require('@metamask/eth-sig-util')
 const {BcUrDecoder} = require('@keystonehq/bc-ur-registry')
 const {EthSignRequest, DataType, CryptoKeypath} = require('@keystonehq/bc-ur-registry-eth')
 const {Common} = require('@ethereumjs/common')
-const uuid = require('uuid') 
 
 const encode = (sign) => {
   const signable = JSON.parse(sign)
-  const fromAddress = ethUtil.stripHexPrefix(signable.from)
-
-  const partFrom = fromAddress.substr(0, 4) +
-    fromAddress.substr(18, 2) + fromAddress.slice(-4)
-  
 	const version = signable.version
 	const tx = signable.payload
 	const derivePath = CryptoKeypath.fromPathString(signable.derivePath)
-	var rlpEncoded
-	let sanitizedTypedData
 	let EIP_1559 = true
-	let common
-	let dataType
 	let xfp = "12345678";
+	let rlpEncoded, common, dataType, serializedMessage, txn
+
   switch (signable.type) {
     case 'sign_message':
     case 'sign_personal_message':
-			rlpEncoded = rlp.encode(Buffer.from(signable.payload))
+			rlpEncoded = Buffer.from(rlp.encode(Buffer.from(signable.payload)))
 			dataType = DataType.personalMessage
 			break
     case 'sign_typed_data':
-			sanitizedTypedData = TypedDataUtils.sanitizeData(signable.payload)
-			rlpEncoded = TypedDataUtils.encodeData(sanitizedTypedData.primaryType, sanitizedTypedData.message, sanitizedTypedData.types, version) 
+			rlpEncoded = Buffer.from(rlp.encode([Buffer.from(version[1], 'utf8'), Buffer.from(signable.payload, 'utf8')]))
 			dataType = DataType.typedData
 			break
     case 'sign_transaction':
 			EIP_1559 = !tx.gasPrice	
 			common = new Common({chain: tx.chainId})
 			if (EIP_1559) {
-				rlpEncoded = FeeMarketEIP_1559Transaction.fromTxData(tx, {common}).serialize()
+				txn = FeeMarketEIP1559Transaction.fromTxData(tx, {common})
+				dataType = DataType.typedTransaction
 			} else {
-				rlpEncoded = Transaction.fromTxData(tx, {common}).serialize()
+				txn = Transaction.fromTxData(tx, {common})
+				dataType = DataType.transaction
 			}
-			dataType = DataType.transaction
+			serializedMessage = txn.getMessageToSign(false)
+			rlpEncoded = Buffer.from(rlp.encode(serializedMessage))
 			break
 		default:
-			throw new Error('Unknown signable type')
+			throw new Error(`Unknown signable type: ${signable.type}`)
   }
-	return EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, uuid.v4(), BigInt(tx.chainId))
+	return EthSignRequest.constructETHRequest(rlpEncoded, dataType, derivePath, xfp, signable.uuid, tx.chainId)
 }
 
 const decode = (encoded) => {
